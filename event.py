@@ -214,14 +214,16 @@ class RiderRequest(Event):
         @rtype: list[Event]
         """
         monitor.notify(self.timestamp, RIDER, REQUEST,
-                       self.rider.id, self.rider.origin)
+                       self.rider.identifier, self.rider.location)
 
         events = []
+
         driver = dispatcher.request_driver(self.rider)
+
         if driver is not None:
-            travel_time = driver.start_drive(self.rider.origin)
+            travel_time = driver.start_drive(self.rider.location)
             events.append(Pickup(self.timestamp + travel_time, self.rider, driver))
-        events.append(Cancellation(self.timestamp + self.rider.patience, self.rider))
+        events.append(Cancellation(int(self.timestamp) + int(self.rider.patience), self.rider))
         return events
 
     def __str__(self):
@@ -251,6 +253,7 @@ class DriverRequest(Event):
         super().__init__(timestamp)
         self.driver = driver
 
+
     def do(self, dispatcher, monitor):
         """Register the driver, if this is the first request, and
         assign a rider to the driver, if one is available.
@@ -268,10 +271,23 @@ class DriverRequest(Event):
         # If there is one available, the driver starts driving towards the
         # rider, and the method returns a Pickup event for when the driver
         # arrives at the riders location.
-        if len(dispatcher.friders) >= 1:
-            dispatcher.request_rider(self, driver)
 
-            return Pickup(Event)
+        monitor.notify(self.timestamp, DRIVER, REQUEST,
+                       self.driver.identifier, self.driver.location)
+
+        events = []
+
+        rider = dispatcher.request_rider(self.driver)
+
+        if rider is not None:
+
+            travel_time = driver.start_drive(self.rider.location)
+
+            events.append(Pickup(self.timestamp + travel_time, rider, self.driver))
+
+        return events
+
+
 
     def __str__(self):
         """Return a string representation of this event.
@@ -282,23 +298,102 @@ class DriverRequest(Event):
         return "{} -- {}: Request a rider".format(self.timestamp, self.driver)
 
 
+
 class Cancellation(Event):
-    # TODO
-    pass
+
+    def __init__(self, timestamp, rider):
+
+        #rider type -> Rider
+        #time type -> int
+
+        self.timestamp = timestamp
+        self.rider = rider
+
+    def do(self, dispatcher, monitor):
+
+        monitor.notify(int(self.timestamp) + int(self.rider.patience), RIDER, CANCEL,
+                       self.rider.identifier, self.rider.location)
+
+        if self.rider.status != "satisfied":
+
+            self.rider.status = "cancelled"
+
+
 
 
 class Pickup(Event):
 
-    def __init__(self):
+    def __init__(self, timestamp, rider, driver):
 
-    def do (self, )
-    Driver.start_ride(self, rider)
-    Driver.location = rider.location
+        self.timestamp = timestamp
+        self.rider = rider
+        self.driver = driver
+
+
+
+
+    def do (self, dispatcher, monitor):
+
+        if self.rider.status == "waiting":
+
+            monitor.notify(self.timestamp, DRIVER, PICKUP,
+                       self.driver.identifier, self.driver.location)
+
+            monitor.notify(int(self.timestamp), RIDER, PICKUP,
+                       self.rider.identifier, self.rider.location)
+
+            events = []
+
+            self.driver.location = self.rider.location
+
+            self.driver.destination = self.rider.destination
+
+            self.rider.status = "satisfied"
+
+
+            events.append(Dropoff(self.timestamp + self.driver.start_drive(self.rider.destination), self.rider, self.driver))
+
+            return events
+
+
+
+
+        if self.rider.status == "cancelled":
+
+            new = DriverRequest( self.time + self.driver.start_drive(self.rider.destination) , self.driver)
+
+            self.driver.destination = None
+
+            return new
+
+
 
 
 
 class Dropoff(Event):
-    Driver.end_ride(self)
+
+    def __init__(self, timestamp, rider, driver):
+
+        self.timestamp = timestamp
+        self.rider = rider
+        self.driver = driver
+
+    def do(self, dispatcher, monitor):
+
+        monitor.notify(self.timestamp, DRIVER, DROPOFF,
+                       self.driver.identifier, self.driver.location)
+
+        self.rider.status = "satisfied"
+
+        self.driver.location = self.rider.destination
+        self.driver.destination = None
+
+        new = DriverRequest(self.timestamp, self.driver)
+
+        return new
+
+
+
 
 def create_event_list(filename):
     """Return a list of Events based on raw list of events in <filename>.
@@ -331,13 +426,20 @@ def create_event_list(filename):
             # a location.
 
             if event_type == "DriverRequest":
-                # TODO
-                # Create a DriverRequest event.
-                pass
+
+                location = deserialize_location(tokens[3])
+
+                event = DriverRequest(timestamp, Driver(tokens[2], location, tokens[4], None ))
+
+
             elif event_type == "RiderRequest":
-                # TODO
-                # Create a RiderRequest event.
-                pass
+
+                location = deserialize_location(tokens[3])
+                destination = deserialize_location(tokens[4])
+
+                event = RiderRequest(timestamp, Rider(tokens[2], location, destination, tokens[5], None ))
+
+
 
             events.append(event)
 

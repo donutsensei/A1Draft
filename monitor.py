@@ -136,11 +136,15 @@ class Monitor:
         for activities in self._activities[RIDER].values():
             # A rider that has less than two activities hasn't finished
             # waiting (they haven't cancelled or been picked up).
+
             if len(activities) >= 2:
                 # The first activity is REQUEST, and the second is PICKUP
                 # or CANCEL. The wait time is the difference between the two.
+                print(activities[1].time)
+                print(activities[0].time)
                 wait_time += activities[1].time - activities[0].time
                 count += 1
+
         return wait_time / count
 
     def _average_total_distance(self):
@@ -149,8 +153,20 @@ class Monitor:
         @type self: Monitor
         @rtype: float
         """
-        # TOD
-        pass
+        totald = 0
+        distance = 0
+        totalc = 0
+        count = 0
+
+        for activities in self._activities[DRIVER].values():
+            print (activities)
+            for list in activities:
+                distance += list.time
+                count += 1
+            totald += distance
+            totalc += count
+
+        return totald/totalc
 
     def _average_ride_distance(self):
         """Return the average distance drivers have driven on rides.
@@ -158,5 +174,4 @@ class Monitor:
         @type self: Monitor
         @rtype: float
         """
-        # TODO
-        pass
+        return self._average_total_distance() - self._average_wait_time()
