@@ -14,19 +14,20 @@ class Driver:
         A property that is True if the driver is idle and False otherwise.
     """
 
-    def __init__(self, identifier, location, speed):
+    def __init__(self, identifier, location, speed, destination):
         """Initialize a Driver.
 
         @type self: Driver
         @type identifier: str
         @type location: Location
-        @type speed: int
+        @type speed: int -> constant for each driver
         @rtype: None
         """
 
         self.identifier = identifier
         self.location = location
         self.speed = speed
+        self.destination = destination
 
 
     def __str__(self):
@@ -36,7 +37,7 @@ class Driver:
         @rtype: str
         """
 
-        return "The driver ID is" + Driver.identifier + ", with location" + Driver.location
+        return "The driver ID is " + self.identifier + ", and " + str(self.location) + " with speed " + self.speed
 
     def __eq__(self, other):
         """Return True if self equals other, and false otherwise.
@@ -45,10 +46,8 @@ class Driver:
         @rtype: bool
         """
 
-        if self == other:
-            return True
+        return self.identifier == other
 
-        return False
 
 
     def get_travel_time(self, destination):
@@ -60,12 +59,12 @@ class Driver:
         @rtype: int
         """
 
-        self.x = self.location.row - Driver.destination.row
-        self.y = self.location.column - Driver.destination.column
+        x = self.location.row - destination.row
+        y = self.location.column - destination.column
 
-        self.distance = abs(self.x) + abs(self.y)
+        distance = abs(x) + abs(y)
 
-        return self.distance//Driver.speed
+        return distance//int(self.speed)
 
 
     def start_drive(self, location):
@@ -77,7 +76,7 @@ class Driver:
         @rtype: int
         """
 
-        return (abs(self.location.row - Driver.location.row) + abs(self.location.column - Driver.location.column))//Driver.speed
+        return (abs(int(self.location.row) - int(location.row)) + abs(int(self.location.column) - int(location.column)))//int(self.speed)
 
 
 
@@ -89,9 +88,9 @@ class Driver:
         @type self: Driver
         @rtype: None
         """
-        if self.destination:
+        if self.destination != None:
 
-            Driver.location = self.destination
+            self.location = self.destination
 
 
     def start_ride(self, rider):
@@ -101,10 +100,8 @@ class Driver:
         @type rider: Rider
         @rtype: int
         """
-        row = Driver.location.row - Rider.location.row
-        column = Driver.location.column - Rider.location.column
 
-        return (abs(Driver.location.row - rider.location.row) + abs(Driver.location.column - rider.location.column))//Driver.speed
+        return (abs(self.location.row - rider.location.row) + abs(self.location.column - rider.location.column))//self.speed
 
 
     def end_ride(self):
@@ -116,6 +113,6 @@ class Driver:
         @type self: Driver
         @rtype: None
         """
-        if self.destination:
+        if self.destination != None:
 
-            Driver.location = self.destination
+            self.location = self.destination

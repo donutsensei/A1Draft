@@ -18,22 +18,30 @@ SATISFIED = "satisfied"
 
 class Rider:
 
-    def __init__(self, identifier, location, destination, status, patience):
+    def __init__(self, identifier, location, destination, patience, status):
 
         """
         @type self: Rider
         @type identifier: str
         @type location: Location
         @type destination: Location
-        @type status: str
         @type patience: int
         """
 
         self.identifier = identifier
         self.location = location
         self.destination = destination
-        self.status = status
         self.patience = patience
+        self.status = status
+
+    def __str__(self):
+        """Return a string representation.
+
+        @type self: Driver
+        @rtype: str
+        """
+
+        return "The rider ID is " + self.identifier + ", and " + str(self.location)
 
 
 

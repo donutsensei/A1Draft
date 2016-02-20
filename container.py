@@ -120,3 +120,4 @@ class PriorityQueue(Container):
         self._items.append(item)
 
         return self._items.sort()
+

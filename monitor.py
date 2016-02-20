@@ -140,8 +140,7 @@ class Monitor:
             if len(activities) >= 2:
                 # The first activity is REQUEST, and the second is PICKUP
                 # or CANCEL. The wait time is the difference between the two.
-                print(activities[1].time)
-                print(activities[0].time)
+
                 wait_time += activities[1].time - activities[0].time
                 count += 1
 
@@ -159,7 +158,7 @@ class Monitor:
         count = 0
 
         for activities in self._activities[DRIVER].values():
-            print (activities)
+
             for list in activities:
                 distance += list.time
                 count += 1

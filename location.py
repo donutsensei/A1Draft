@@ -16,7 +16,7 @@ class Location:
 
         @rtype: str
         """
-        return "The Location is at row" + str(self.row) + " and column" + str(self.column)
+        return "The Location is at row " + str(self.row) + " and column " + str(self.column)
 
 
     def __eq__(self, other):
@@ -24,10 +24,7 @@ class Location:
 
         @rtype: bool
         """
-        if self == other:
-            return True
-
-        return False
+        return self == self.other
 
 
 def manhattan_distance(origin, destination):
@@ -40,12 +37,11 @@ def manhattan_distance(origin, destination):
     x = origin.row - destination.row
     y = origin.column - destination.column
 
-    distance = abs(x) + abs(y)
-
-    return distance
+    return abs(x) + abs(y)
 
 
-def deserialize_location(location_str):
+
+def deserialize_location(location_str): 
     """Deserialize a location.
 
     @type location_str: str
@@ -54,5 +50,5 @@ def deserialize_location(location_str):
     """
     location = location_str.split(',')
 
-    return Location(location[0],location[1])
+    return Location(int(location[0]),int(location[1]))
 

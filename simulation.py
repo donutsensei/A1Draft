@@ -39,6 +39,9 @@ class Simulation:
         self._dispatcher = Dispatcher()
         self._monitor = Monitor()
 
+
+
+
     def run(self, initial_events):
         """Run the simulation on the list of events in <initial_events>.
 
@@ -51,73 +54,82 @@ class Simulation:
         @rtype: dict[str, object]
         """
 
+        for item in initial_events:
 
-        while len(initial_events) != 0:
-
-
-
-            for event in initial_events:
-
-                parse = str(event).split()
+            self._events.add(item)
 
 
 
-                # "REQUEST A RIDER"
-                if parse[-1] == 'rider':
+
+        while len(self._events._items) > 0:
+
+
+            event = self._events.remove()
+
+            parse = str(event).split()
+
+
+
+            # "REQUEST A RIDER"
+            if parse[-1] == 'rider':
+
 
                     if event.driver.destination is None:
 
                         events = event.do (self._dispatcher, self._monitor)
 
-
-                        if events != []:
-
-                            for pickup in events:
-
-                                events = pickup.do(self._dispatcher, self._monitor)
-
-                                for dropoff in events:
-
-                                    dropoff.do(self._dispatcher, self._monitor)
-
-                                    initial_events.remove(initial_events[0])
-
-
-
-
-                # "REQUEST A DRIVER"
-                if parse[-1] == 'driver':
-
-                    if event.rider.status is None:
-
-                        events = event.do (self._dispatcher, self._monitor)
-
-                        event.rider.status = 'waiting'
-
-                        if len(events) == 2:
-
-                            if events[0].driver.get_travel_time(events[0].rider.destination) <= int(events[0].rider.patience):
-
-                                pickup = events[0].do(self._dispatcher, self._monitor)
-
-                                for dropoff in pickup:
-
-                                    dropoff.do(self._dispatcher, self._monitor)
-
-                            else:
-                                events[1].do(self._dispatcher, self._monitor)
-
-
-                        if len(events) == 1:
-
+                        if len(events) > 0:
                             for event in events:
 
-                                if event.timestamp > event.rider.patience:
-
-                                    event.do(self._dispatcher, self._monitor)
+                                self._events.add(event)
 
 
 
+
+
+            # "REQUEST A DRIVER"
+            if parse[-1] == 'driver':
+
+                if event.rider.status is None:
+
+                    events = event.do (self._dispatcher, self._monitor)
+
+
+                    for event in events:
+
+                        self._events.add(event)
+
+                    event.rider.status = 'waiting'
+
+
+
+
+            #For Cancelled Rides
+            if parse[-1] == 'cancelled':
+
+                event.do(self._dispatcher, self._monitor)
+
+
+
+
+            #For pick up events
+            if parse[-1] == 'pickedup':
+
+                events = event.do(self._dispatcher, self._monitor)
+
+
+                if events != [] and events is not None:
+
+                    for event in events:
+
+                        self._events.add(event)
+
+
+
+            #for drop off events
+            if parse[-1] == 'off':
+
+                self._events.add(event.do(self._dispatcher, self._monitor))
 
 
             # Add all initial events to the event queue.
@@ -127,12 +139,7 @@ class Simulation:
             # events to the event queue.
 
 
-            print(self._monitor._activities['driver'].values())
-            print(self._dispatcher.friders)
-            print(self._dispatcher.fdrivers)
-
-
-            return self._monitor.report()
+        return self._monitor.report()
 
 
 if __name__ == "__main__":

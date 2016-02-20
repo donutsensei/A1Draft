@@ -35,8 +35,9 @@ class Dispatcher:
         @type self: Dispatcher
         @rtype: str
         """
-        return "There are " + len(self.fdrivers) + " drivers available and " + len(self.friders) + " available riders."
-        pass
+        return str(len(self.fdrivers)) + " drivers are available and " + str(len(self.friders)) + " riders are available."
+
+
 
     def request_driver(self, rider):
         """Return a driver for the rider, or None if no driver is available.
@@ -47,12 +48,18 @@ class Dispatcher:
         @type rider: Rider
         @rtype: Driver | None
         """
-        if self.fdrivers == []:
-            return None
-        else:
-            self.dic[self.fdrivers[0]] = rider
 
-            return self.fdrivers.remove(self.fdrivers[0])
+        if rider not in self.friders:
+            self.friders.append(rider)
+
+        if self.fdrivers != []:
+
+           # self.dic[self.fdrivers[0]] = rider
+
+            return self.fdrivers.pop(0)
+
+
+        return None
 
 
 
@@ -66,12 +73,20 @@ class Dispatcher:
         @rtype: Rider | None
         """
 
-        if self.friders == []:
-            return None
-        else:
-            self.dic[driver] = self.friders[0]
 
-            return self.friders.remove(self.friders[0])
+        if (driver not in self.fdrivers) and (driver.destination is None):
+
+            self.fdrivers.append(driver)
+
+        if self.friders != []:
+
+            #self.dic[driver] = self.friders[0]
+
+            return self.friders.pop(0)
+
+        return None
+
+
 
 
     def cancel_ride(self, rider):

@@ -281,7 +281,7 @@ class DriverRequest(Event):
 
         if rider is not None:
 
-            travel_time = driver.start_drive(self.rider.location)
+            travel_time = self.driver.start_drive(rider.location)
 
             events.append(Pickup(self.timestamp + travel_time, rider, self.driver))
 
@@ -309,6 +309,11 @@ class Cancellation(Event):
         self.timestamp = timestamp
         self.rider = rider
 
+    def __str__(self):
+        """Return a string representation of this event."""
+
+        return ("Ride has been cancelled")
+
     def do(self, dispatcher, monitor):
 
         monitor.notify(int(self.timestamp) + int(self.rider.patience), RIDER, CANCEL,
@@ -330,6 +335,10 @@ class Pickup(Event):
         self.driver = driver
 
 
+    def __str__(self):
+        """Return a string representation of this event."""
+
+        return ("Rider has been pickedup")
 
 
     def do (self, dispatcher, monitor):
@@ -357,14 +366,19 @@ class Pickup(Event):
 
 
 
+        if self.timestamp >= int(self.rider.patience):
 
-        if self.rider.status == "cancelled":
+            self.rider.status = 'cancelled'
 
-            new = DriverRequest( self.time + self.driver.start_drive(self.rider.destination) , self.driver)
+            events = []
+
+            events.append(Cancellation(self.timestamp, self.rider))
+
+            events.append(DriverRequest( self.timestamp + self.driver.start_drive(self.rider.destination) , self.driver))
 
             self.driver.destination = None
 
-            return new
+            return events
 
 
 
@@ -377,6 +391,11 @@ class Dropoff(Event):
         self.timestamp = timestamp
         self.rider = rider
         self.driver = driver
+
+    def __str__(self):
+        """Return a string representation of this event."""
+
+        return ("Rider has been dropped off")
 
     def do(self, dispatcher, monitor):
 
